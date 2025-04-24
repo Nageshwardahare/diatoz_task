@@ -1,0 +1,28 @@
+<h1>Your Profile</h1>
+
+<p>Email: <%= @user.email %></p>
+<p>Role: <%= @user.role %></p>
+
+<h3>Your Loan Requests</h3>
+<%= link_to 'Request New Loan', new_loan_path %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Amount</th>
+      <th>Interest Rate</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @user.loans.each do |loan| %>
+      <tr>
+        <td><%= loan.amount %></td>
+        <td><%= loan.interest_rate %></td>
+        <td><%= loan.status %></td>
+        <td><%= link_to 'View', loan_path(loan) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

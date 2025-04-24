@@ -1,0 +1,43 @@
+<div class="container mt-5">
+    <h2 class="mb-4">Propose Adjustment for Loan</h2>
+  
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <%= form_with model: [@loan, @loan_adjustment], local: true, html: { class: "needs-validation", novalidate: true } do |f| %>
+  
+          <div class="mb-3">
+            <%= f.label :new_amount, "New Amount", class: "form-label" %>
+            <%= f.number_field :new_amount, value: @loan.amount, step: 100, required: true, class: "form-control", placeholder: "Enter new loan amount" %>
+            <% if @loan_adjustment.errors[:new_amount].any? %>
+              <div class="text-danger mt-1">
+                <%= @loan_adjustment.errors[:new_amount].first %>
+              </div>
+            <% end %>
+          </div>
+  
+          <div class="mb-3">
+            <%= f.label :new_interest_rate, "New Interest Rate", class: "form-label" %>
+            <%= f.number_field :new_interest_rate, value: @loan.interest_rate, step: 0.1, required: true, class: "form-control", placeholder: "Enter new interest rate %" %>
+            <% if @loan_adjustment.errors[:new_interest_rate].any? %>
+              <div class="text-danger mt-1">
+                <%= @loan_adjustment.errors[:new_interest_rate].first %>
+              </div>
+            <% end %>
+          </div>
+  
+          <div class="mb-3">
+            <%= f.label :comment, class: "form-label" %>
+            <%= f.text_area :comment, class: "form-control", rows: 4, placeholder: "Add a comment (optional)" %>
+            <% if @loan_adjustment.errors[:comment].any? %>
+              <div class="text-danger mt-1">
+                <%= @loan_adjustment.errors[:comment].first %>
+              </div>
+            <% end %>
+          </div>
+  
+          <%= f.submit "Send Adjustment", class: "btn btn-primary w-100" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  

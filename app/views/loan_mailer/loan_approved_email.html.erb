@@ -1,0 +1,14 @@
+<h1>Hello <%= @user.full_name %>,</h1>
+
+<p>Your loan request has been approved by the admin!</p>
+
+<p><strong>Loan Details:</strong></p>
+<ul>
+  <li>Amount: <%= number_to_currency(@loan.amount) %></li>
+  <li>Interest Rate: <%= @loan.interest_rate %>%</li>
+  <li>Status: <%= @loan.status.titleize %></li>
+</ul>
+
+<p>Please log in to your account to confirm or reject the loan.</p>
+
+<p>Thanks,<br>YourApp Team</p>

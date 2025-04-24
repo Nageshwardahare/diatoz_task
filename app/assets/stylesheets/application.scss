@@ -1,0 +1,49 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
+ * vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+
+ @import "bootstrap";
+/* app/assets/stylesheets/application.css or custom_styles.scss */
+
+/* app/assets/stylesheets/application.css or custom_styles.scss */
+
+/* General styles for the form-login class */
+.form-login, .form-confirmation, .form-password-reset, .form-forgot-password, .form-edit-account, .form-signup {
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Customize input fields */
+  .form-control {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  /* Add hover effect on the button */
+  .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+  }
+  
+  #notice-message, #alert-message {
+    display: none;
+    transition: opacity 1s ease-in-out;
+  }
+
+  
+  
+

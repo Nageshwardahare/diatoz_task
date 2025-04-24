@@ -1,0 +1,114 @@
+<div class="container mt-5">
+  <h1 class="mb-4">Loan Details</h1>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <ul class="list-group list-group-flush mb-4">
+        <% if current_user.admin? %>
+          <li class="list-group-item"><strong>Name:</strong> <%= @loan.user&.full_name %></li>
+          <li class="list-group-item"><strong>Age:</strong> <%= @loan.user&.age %></li>
+          <li class="list-group-item"><strong>Wallet Balance:</strong> <%= number_to_currency(@loan.user&.wallet_balance, unit: "₹") %></li>
+        <% end %>
+
+        <li class="list-group-item"><strong>Amount:</strong> <%= number_to_currency(@loan.amount, unit: "₹") %></li>
+        <li class="list-group-item"><strong>Interest Rate:</strong> <%= @loan.interest_rate %>%</li>
+        <li class="list-group-item"><strong>Status:</strong>
+          <span class="badge <%= case @loan.status
+            when "approved" then "bg-success"
+            when "rejected" then "bg-danger"
+            when "waiting_for_adjustment_acceptance" then "bg-warning text-dark"
+            when "readjustment_requested" then "bg-info text-dark"
+            when "open" then "bg-primary"
+            when "closed" then "bg-dark"
+            else "bg-secondary"
+          end %>">
+            <%= @loan.status.titleize %>
+          </span>
+        </li>
+
+        <% if @loan.status == "open" || @loan.status == "closed" %>
+          <p>Total Payable: <%= number_to_currency(@loan.total_payable || 0, unit: "₹")%></p>
+        <% end %>
+      </ul>
+
+      <%# Admin Actions %>
+      <% if current_user.admin? %>
+        <% if @loan.status == "waiting_for_adjustment_acceptance" %>
+          <p class="text-muted">Waiting for user to respond to adjustment...</p>
+        <% end %>
+      <% end %>
+
+      <%# User Actions %>
+      <% if @loan.user == current_user %>
+        <% if @loan.status == "waiting_for_adjustment_acceptance" %>
+          <div class="d-flex gap-3 mt-3">
+            <%= button_to 'Accept Adjustment', accept_adjustment_loan_path(@loan),
+              method: :patch,
+              data: { confirm: "Accept new terms and proceed?" },
+              class: "btn btn-success" %>
+
+            <%= button_to 'Reject Adjustment', reject_loan_path(@loan),
+                          method: :patch,
+                          data: { confirm: "Reject this adjustment?" },
+                          class: "btn btn-danger" %>
+
+            <%= button_to 'Request Readjustment', request_readjustment_loan_path(@loan),
+              method: :patch,
+              class: "btn btn-warning" %>
+
+          </div>
+        <% elsif @loan.status == "open" %>
+          <div class="mt-4">
+            <p><strong>Wallet Balance:</strong> <%= number_to_currency(current_user.wallet_balance, unit: "₹") %></p>
+            <%= link_to "Repay Loan", repay_loan_path(@loan), method: :post, data: { confirm: "Repay full loan amount?" }, class: "btn btn-primary" %>
+          </div>
+        <% elsif @loan.status == "requested" %>
+          <%= link_to 'Edit Loan Request', edit_loan_path(@loan), class: "btn btn-warning mt-3" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @loan.loan_adjustments.any? %>
+    <div class="mt-5">
+      <h3>Loan Adjustment History</h3>
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>New Amount</th>
+                <th>New Interest</th>
+                <th>Comment</th>
+                <!-- <th>Status</th> -->
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @loan.loan_adjustments.each_with_index do |adjustment, index| %>
+                <tr>
+                  <td><%= index + 1 %></td>
+                  <td><%= number_to_currency(adjustment.new_amount, unit: "₹") %></td>
+                  <td><%= adjustment.new_interest_rate %>%</td>
+                  <td><%= adjustment.comment.presence || "-" %></td>
+                  <!-- <td>
+                    <span class="badge <%= case adjustment.status
+                      when "approved" then "bg-success"
+                      when "rejected" then "bg-danger"
+                      when "pending" then "bg-warning text-dark"
+                      else "bg-secondary"
+                    end %>">
+                      <%= adjustment.status.capitalize %>
+                    </span>
+                  </td> -->
+                  <td><%= l(adjustment.created_at, format: :short) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

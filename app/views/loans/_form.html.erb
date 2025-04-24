@@ -1,0 +1,35 @@
+<div class="container mt-5">
+    <h1 class="mb-4">
+      <%= @loan.new_record? ? "Request a Loan" : "Edit Loan" %>
+    </h1>
+  
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <%= form_with model: @loan, local: true, html: { class: "needs-validation", novalidate: true } do |form| %>
+  
+          <div class="mb-3">
+            <%= form.label :amount, class: "form-label" %>
+            <%= form.number_field :amount, step: 100, required: true, class: "form-control", placeholder: "Enter loan amount" %>
+            <% if @loan.errors[:amount].any? %>
+              <div class="text-danger mt-1">
+                <%= @loan.errors[:amount].first %>
+              </div>
+            <% end %>
+          </div>
+  
+          <div class="mb-3">
+            <%= form.label :interest_rate, class: "form-label" %>
+            <%= form.number_field :interest_rate, step: 0.1, required: true, class: "form-control", placeholder: "Enter interest rate %" %>
+            <% if @loan.errors[:interest_rate].any? %>
+              <div class="text-danger mt-1">
+                <%= @loan.errors[:interest_rate].first %>
+              </div>
+            <% end %>
+          </div>
+  
+          <%= form.submit @loan.new_record? ? 'Submit Loan Request' : 'Update Loan', class: "btn btn-primary w-100" %>
+        <% end %>
+      </div>
+    </div>
+</div>
+  

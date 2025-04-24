@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  loan: one
+  old_amount: 9.99
+  new_amount: 9.99
+  old_interest_rate: 9.99
+  new_interest_rate: 9.99
+  status: 1
+  comment: MyText
+
+two:
+  loan: two
+  old_amount: 9.99
+  new_amount: 9.99
+  old_interest_rate: 9.99
+  new_interest_rate: 9.99
+  status: 1
+  comment: MyText

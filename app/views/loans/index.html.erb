@@ -1,0 +1,206 @@
+<div class="container">
+  <h2>User Details:</h2>
+  <div class="row mb-4 p-3 border rounded bg-light">
+    <div class="col-md-6 mb-2">
+      <strong>Name:</strong> <%= current_user.full_name.titleize %>
+    </div>
+    <div class="col-md-6 mb-2">
+      <strong>Email:</strong> <%= current_user.email %>
+    </div>
+    <div class="col-md-6 mb-2">
+      <strong>Age:</strong> <%= current_user.age || 'N/A' %>
+    </div>
+    <div class="col-md-6 mb-2">
+      <strong>Wallet Amount:</strong> <%= number_to_currency(current_user.wallet_balance || 0, unit: "₹") %>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Loans</h1>
+    <% unless current_user.admin? %>
+      <%= link_to 'Request Loan', new_loan_path, class: "btn btn-primary" %>
+    <% end %>
+  </div>
+    
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <% if current_user.admin? %>
+      <h3 class="mb-0">All Loan Requests</h3>
+    <% else %>
+      <h3 class="mb-0">Your Loan Requests</h3>
+    <% end %>
+  
+    <%= form_with url: loans_path, method: :get, local: true do %>
+      <div class="form-group mb-0">
+        <%= select_tag :status, options_for_select(Loan.statuses.keys.map { |s| [s.titleize, s] }, params[:status]), prompt: "Filter by Status", class: "form-select", onchange: "this.form.submit();" %>
+      </div>
+    <% end %>
+  </div>  
+
+  <% if @loans.empty? %>
+    <div class="alert alert-warning" role="alert">
+      No loan requests available.
+    </div>
+  <% else %>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover table-striped align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>User Name</th>
+            <th>Amount</th>
+            <th>Interest Rate</th>
+            <th>Approved by Admin</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @loans.includes(:user).each do |loan| %>
+            <tr>
+              <td><%= loan.user&.full_name&.titleize %></td>
+              <td><%= number_to_currency(loan.amount, unit: "₹") %></td>
+              <td><%= loan.interest_rate %>%</td>
+              <td><%= loan.approved_by_admin %></td>
+              <td>
+                <span class="badge 
+                  <%= case loan.status
+                      when 'approved' then 'bg-success'
+                      when 'rejected' then 'bg-danger'
+                      else 'bg-secondary'
+                     end %>">
+                  <%= loan.status.titleize %>
+                </span>
+              </td>
+              <td class="text-center align-middle">
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+              
+                  <% if current_user.admin? %>
+                    <% if loan.status == "requested" || loan.status == "readjustment_requested" %>
+                      <button class="btn btn-success btn-sm" onclick="approveLoan(<%= loan.id %>)">Approve</button>
+                      <button class="btn btn-danger btn-sm" onclick="rejectLoan(<%= loan.id %>)">Reject</button>
+              
+                      <!-- Loan Adjustment Modal Trigger -->
+                      <%= link_to "Adjust", new_loan_loan_adjustment_path(loan), class: "btn btn-warning btn-sm" %>
+
+              
+                      <!-- Adjustment Modal -->
+                      <div class="modal fade" id="adjustLoanModal-<%= loan.id %>" tabindex="-1" aria-labelledby="adjustLoanModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="adjustLoanModalLabel">Adjust Loan</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <%= form_with url: adjust_loan_path(loan), method: :patch, local: true do |f| %>
+                              <div class="modal-body">
+                                <div class="mb-3">
+                                  <%= f.label :amount, "New Amount" %>
+                                  <%= f.number_field :amount, value: loan.amount, class: "form-control" %>
+                                </div>
+                                <div class="mb-3">
+                                  <%= f.label :interest_rate, "New Interest Rate" %>
+                                  <%= f.number_field :interest_rate, value: loan.interest_rate, step: 0.1, class: "form-control" %>
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <%= f.submit "Send Adjustment", class: "btn btn-primary" %>
+                              </div>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+              
+                  <% elsif current_user == loan.user %>
+                    <% if loan.approved? %>
+                      <%= button_to "Confirm", confirm_loan_path(loan, status: "approved"), 
+                                    method: :patch, 
+                                    data: { confirm: "Confirm loan and receive funds?" },
+                                    class: "btn btn-success btn-sm" %>
+              
+                      <%= button_to "Reject", confirm_loan_path(loan, status: "rejected"), 
+                                    method: :patch, 
+                                    data: { confirm: "Reject this approved loan?" },
+                                    class: "btn btn-danger btn-sm" %>
+              
+                    <% elsif loan.status == "waiting_for_adjustment_acceptance" %>
+                      <%= link_to "Accept Adjustment", accept_adjustment_loan_path(loan), 
+                                  method: :patch, 
+                                  class: "btn btn-success btn-sm" %>
+              
+                      <%= link_to "Reject", reject_loan_path(loan), 
+                                  method: :patch, 
+                                  class: "btn btn-danger btn-sm" %>
+              
+                      <%= link_to "Request Readjustment", request_readjustment_loan_path(loan), 
+                                  method: :patch, 
+                                  class: "btn btn-warning btn-sm" %>
+                    <% end %>
+                  <% end %>
+              
+                  <%= link_to "View", loan_path(loan), class: "btn btn-outline-primary btn-sm" %>
+              
+                </div>
+              </td> 
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  <div class="d-flex justify-content-center">
+    <%= paginate @loans %>
+  </div>  
+</div>
+
+<script>
+ async function approveLoan(loanId) {
+  if (!confirm("Are you sure you want to approve this loan?")) return;
+
+  try {
+    const response = await fetch(`/loans/${loanId}/approve`, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text(); // to help debug the error message
+      console.error("Server responded with error:", errorText);
+      alert("Failed to approve loan.");
+      return;
+    }
+
+    location.reload();
+  } catch (error) {
+    console.error("Network or unexpected error:", error);
+    alert("Network error.");
+  }
+}
+
+async function rejectLoan(loanId) {
+  if (!confirm("Are you sure you want to reject this loan?")) return;
+
+  try {
+    const response = await fetch(`/loans/${loanId}/reject`, {
+      method: 'PATCH',
+      headers: {
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      alert("Failed to reject loan.");
+      return;
+    }
+
+    location.reload();
+  } catch (error) {
+    console.error("Network or unexpected error:", error);
+    alert("Network error.");
+  }
+}
+
+</script>

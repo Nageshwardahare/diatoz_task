@@ -1,0 +1,5 @@
+:schedule:
+  interest_calculation_worker:
+    cron: "*/5 * * * *"
+    class: "InterestCalculationWorker"
+    queue: default

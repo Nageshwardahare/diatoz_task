@@ -1,0 +1,48 @@
+<h2 class="text-center mt-4 mb-4">
+  DI<span style="color: red;">A</span>TO<span style="color: red;">Z</span>
+</h2>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: 'form-login' }) do |f| %>
+        <h2 class="text-center mb-4">Log In</h2>
+
+        <!-- Display notices and alerts -->
+        <% if notice.present? %>
+          <p class="alert alert-success flash-message"><%= notice %></p>
+        <% end %>
+
+        <% if alert.present? %>
+          <p class="alert alert-danger flash-message"><%= alert %></p>
+        <% end %>
+
+        <div class="mb-3">
+          <%= f.label :email, class: 'form-label' %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", class: 'form-control', required: true %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :password, class: 'form-label' %>
+          <%= f.password_field :password, autocomplete: "current-password", class: 'form-control', required: true %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="form-check mb-3">
+            <%= f.check_box :remember_me, class: 'form-check-input' %>
+            <%= f.label :remember_me, class: 'form-check-label' %>
+          </div>
+        <% end %>
+
+        <div class="d-grid gap-2 mb-3">
+          <%= f.submit "Log in", class: 'btn btn-primary btn-lg' %>
+        </div>
+
+        <%= render "devise/shared/links" %>
+
+      <% end %>
+
+    </div>
+  </div>
+</div>
