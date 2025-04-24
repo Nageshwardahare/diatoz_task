@@ -31,19 +31,13 @@ class Loan < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
 
   def total_payable
-    last_adjustment = loan_adjustments.order(created_at: :desc).first
+    # Use the most up-to-date amount from interest accrual
+    amount_to_use = current_amount.present? ? current_amount + amount : amount
 
-    if last_adjustment.present?
-      amount_to_use = last_adjustment.new_amount
-      rate_to_use = last_adjustment.new_interest_rate
-    else
-      amount_to_use = current_amount || amount
-      rate_to_use = interest_rate
-    end
+    last_adjustment = loan_adjustments.order(created_at: :desc).first
+    rate_to_use = last_adjustment&.new_interest_rate || interest_rate
 
     return 0 if amount_to_use.nil? || rate_to_use.nil?
-
-    total = amount_to_use + (amount_to_use * (rate_to_use / 100.0))
-    total
+    amount_to_use
   end
 end

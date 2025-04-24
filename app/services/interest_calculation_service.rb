@@ -11,8 +11,8 @@ class InterestCalculationService
 
     if adjustment
       # If adjustment exists, use the adjustment's amount and interest rate
-      amount = adjustment.amount
-      interest_rate = adjustment.interest_rate
+      amount = adjustment.new_amount
+      interest_rate = adjustment.new_interest_rate
     else
       # If no adjustment, use the original loan values
       amount = @loan.amount
