@@ -20,15 +20,19 @@ Requirements
 
 # run in console
 git clone https://github.com/Nageshwardahare/diatoz_task.git
+
 cd diatoz_task
 
 bundle install
+
 npm install
 
 # setup database.yml file (user_name and password)
 
 rails db:create
+
 rails db:migrate
+
 rails db:seed     ( This will create a default admin user)
 
 bundle exec sidekiq
