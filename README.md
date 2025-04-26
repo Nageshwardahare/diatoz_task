@@ -24,8 +24,6 @@ cd diatoz_task
 
 bundle install
 
-npm install
-
 rails assets:precompile
 
 # setup database.yml file (user_name and password)
