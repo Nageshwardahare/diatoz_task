@@ -13,7 +13,6 @@ Requirements
 - Ruby >= 3.1.1
 - Rails >= 7.2
 - PostgreSQL
-- Node.js and npm (for JavaScript and CSS assets)
 - Redis (for background jobs with Sidekiq)
 
 # Clone the repository
