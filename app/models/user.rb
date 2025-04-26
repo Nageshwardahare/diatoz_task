@@ -4,15 +4,10 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
+  has_many :loans
   enum role: { user: 0, admin: 1 }
 
-  has_many :loans
-
   after_create :set_default_wallet
-
-  def set_default_wallet
-    update(wallet_balance: admin? ? 1_000_000 : 10_000)
-  end
 
   def debit_wallet(amount)
     raise ArgumentError, "Amount must be positive" if amount <= 0
@@ -25,5 +20,10 @@ class User < ApplicationRecord
     raise ArgumentError, "Amount must be positive" if amount <= 0
 
     update!(wallet_balance: wallet_balance + amount)
+  end
+
+  private
+  def set_default_wallet
+    update(wallet_balance: admin? ? 1_000_000 : 10_000)
   end
 end

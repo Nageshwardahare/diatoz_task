@@ -54,10 +54,17 @@ class LoansController < ApplicationController
 
   # Approve the loan (admin only)
   def approve
-    @loan.update(status: :approved, approved_by_admin: true)
-    LoanApprovedNotificationJob.perform_later(@loan.id)
-    respond_to do |format|
-      format.json { render json: { message: "Loan approved" }, status: :ok }
+    if current_user.admin?
+      @loan.update(status: :approved, approved_by_admin: true)
+      LoanApprovedNotificationJob.perform_later(@loan.id)
+
+      respond_to do |format|
+        format.json { render json: { message: "Loan approved" }, status: :ok }
+      end
+    else
+      respond_to do |format|
+        format.json { render json: { error: "Unauthorized" }, status: :unauthorized }
+      end
     end
   end
 
@@ -70,9 +77,12 @@ class LoansController < ApplicationController
   end
 
   def confirm
-    LoanConfirmationService.new(loan: @loan, user: current_user, status: params[:status]).call
-
-    redirect_to root_path, notice: "Loan confirmed successfully"
+    if current_user.user?
+      LoanConfirmationService.new(loan: @loan, user: current_user, status: params[:status]).call
+      redirect_to root_path, notice: "Loan confirmed successfully"
+    else
+      redirect_to root_path, alert: "Unauthorized action"
+    end
   rescue => e
     redirect_to root_path, alert: "Failed to confirm loan: #{e.message}"
   end
@@ -86,8 +96,14 @@ class LoansController < ApplicationController
   end
 
   def accept_adjustment
-    @loan.update(status: :approved)
-    redirect_to loans_path, notice: "Adjustment accepted. Loan approved."
+    if current_user.user?
+      LoanConfirmationService.new(loan: @loan, user: current_user, status: "approved").call
+      redirect_to loans_path, notice: "Adjustment accepted."
+    else
+      redirect_to loans_path, alert: "Unauthorized action"
+    end
+    rescue => e
+      redirect_to loans_path, alert: "Failed to confirm loan: #{e.message}"
   end
 
   def request_readjustment
@@ -96,7 +112,7 @@ class LoansController < ApplicationController
   end
 
   def repay
-    if @loan.status == "open"
+    if @loan.user == current_user && @loan.status == "open"
       total_payable = @loan.total_payable
       user_balance = current_user.wallet_balance
 

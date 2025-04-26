@@ -8,8 +8,6 @@ class LoanConfirmationService
   def call
     if @status == "approved"
       approve_loan
-    elsif @status == "rejected"
-      reject_loan
     else
       raise "Invalid loan status"
     end
@@ -18,15 +16,16 @@ class LoanConfirmationService
   private
 
   def approve_loan
-    raise "Unauthorized or invalid state" unless @user == @loan.user && @loan.approved?
+    raise "Unauthorized or invalid status" unless @user == @loan.user && (@loan.approved? || @loan.waiting_for_adjustment_acceptance?  || @loan.readjustment_requested)
 
     admin = User.find_by(role: "admin")
     raise "Admin not found" unless admin
     raise "Insufficient funds" if admin.wallet_balance < @loan.amount
 
+    amount = @loan.loan_adjustments.present? ? @loan.loan_adjustments&.last&.new_amount : loan.amount
     ActiveRecord::Base.transaction do
-      admin.wallet_balance -= @loan.amount
-      @user.wallet_balance += @loan.amount
+      admin.wallet_balance -= amount
+      @user.wallet_balance += amount
 
       admin.save!
       @user.save!
@@ -34,10 +33,5 @@ class LoanConfirmationService
     end
 
     "Loan confirmed and opened."
-  end
-
-  def reject_loan
-    @loan.update!(status: :rejected)
-    "Loan rejected."
   end
 end
